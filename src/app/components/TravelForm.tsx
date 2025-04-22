@@ -38,7 +38,9 @@ export default function TravelForm() {
       setStreamingThoughts([]);
       setShowResult(false);
 
-      const eventSource = new EventSource("/api/stream-plan");
+      const eventSource = new EventSource(
+        "https://app-20-aether-agent-backend.onrender.com/stream-plan"
+      );
 
       eventSource.onmessage = (event) => {
         const data = event.data;
