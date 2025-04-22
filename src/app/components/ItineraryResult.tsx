@@ -83,28 +83,29 @@ export default function ItineraryResult({
         >
           How the AI Planned This
         </h3>
-        <ul
+        <ol
           style={{
-            listStyle: "none",
-            padding: 0,
+            listStyle: "decimal",
+            paddingLeft: "1.25rem",
             marginBottom: "2rem",
+            lineHeight: "1.6",
           }}
         >
           {agentThoughts.map((thought, index) => (
             <li
               key={index}
               style={{
-                marginBottom: "0.75rem",
-                padding: "0.75rem",
                 backgroundColor: "rgba(72, 202, 228, 0.05)",
                 borderRadius: "4px",
+                padding: "0.5rem 0.75rem",
+                marginBottom: "0.5rem",
                 fontSize: "0.95rem",
               }}
             >
               {thought}
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
 
       <button

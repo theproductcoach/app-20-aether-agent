@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import styles from "../page.module.css";
-import ItineraryResult from "./ItineraryResult";
+import LoadingState from "./LoadingState";
 
 const interests = ["History", "Food", "Nature", "Art", "Relaxation"];
 const currencies = ["USD", "EUR", "GBP", "JPY", "AUD"];
@@ -15,16 +15,11 @@ interface FormData {
   interests: string[];
 }
 
-interface ItineraryResponse {
-  itinerary: { day: string; plan: string }[];
-  totalCost: string;
-  agentThoughts: string[];
-}
-
 export default function TravelForm() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [showResult, setShowResult] = useState(false);
-  const [itineraryData, setItineraryData] = useState<ItineraryResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [streamingThoughts, setStreamingThoughts] = useState<string[]>([]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,29 +34,40 @@ export default function TravelForm() {
     };
 
     try {
-      setItineraryData(null);
+      setIsLoading(true);
+      setStreamingThoughts([]);
+      setShowResult(false);
 
-      const response = await fetch("/api/plan", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const eventSource = new EventSource("/api/stream-plan");
 
-      const data = await response.json();
-      console.log("API Response:", data);
+      eventSource.onmessage = (event) => {
+        const data = event.data;
 
-      setItineraryData(data);
-      setShowResult(true);
+        if (data === "[DONE]") {
+          eventSource.close();
+          setIsLoading(false);
+          setShowResult(true);
+          return;
+        }
+
+        setStreamingThoughts((prev) => [...prev, data]);
+      };
+
+      eventSource.onerror = (err) => {
+        console.error("SSE error:", err);
+        eventSource.close();
+        setIsLoading(false);
+      };
     } catch (error) {
       console.error("Error submitting form:", error);
+      setIsLoading(false);
     }
   };
 
   const handlePlanAnother = () => {
     setShowResult(false);
     setSelectedInterests([]);
+    setStreamingThoughts([]);
   };
 
   const handleInterestToggle = (interest: string) => {
@@ -72,14 +78,26 @@ export default function TravelForm() {
     );
   };
 
-  if (showResult && itineraryData) {
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (showResult) {
     return (
-      <ItineraryResult
-        itinerary={itineraryData.itinerary}
-        totalCost={itineraryData.totalCost}
-        agentThoughts={itineraryData.agentThoughts}
-        onPlanAnother={handlePlanAnother}
-      />
+      <section style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
+        <h2 style={{ marginBottom: "1rem" }}>🧠 Agent Thoughts</h2>
+        <ul style={{ lineHeight: "1.6", paddingLeft: 0 }}>
+          {streamingThoughts.map((thought, index) => (
+            <li key={index} style={{ marginBottom: "0.5rem", listStyle: "none" }}>
+              <span style={{ marginRight: "0.5rem" }}>💡</span>
+              {thought}
+            </li>
+          ))}
+        </ul>
+        <button onClick={handlePlanAnother} style={{ marginTop: "2rem" }}>
+          Plan Another Trip
+        </button>
+      </section>
     );
   }
 
