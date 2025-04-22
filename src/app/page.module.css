@@ -417,16 +417,17 @@ a.secondary {
   height: 100vh;
   position: relative;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding-bottom: 15vh;
+  padding-bottom: 0;
   background-image: url('/hero-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-color: #0a1520;
-  /* Fallback color */
-}
+  position: relative;
+  overflow: hidden;
+  }
 
 .heroOverlay {
   position: absolute;
@@ -435,8 +436,8 @@ a.secondary {
   width: 100%;
   height: 100%;
   background: linear-gradient(to bottom,
-      rgba(10, 21, 32, 0.7) 0%,
-      rgba(10, 21, 32, 0.85) 100%);
+        rgba(10, 21, 32, 0.5) 0%,
+          rgba(10, 21, 32, 0.7) 100%);
 }
 
 .heroContent {
@@ -448,6 +449,7 @@ a.secondary {
   width: 100%;
   max-width: var(--max-width);
   padding: 0 var(--spacing-unit);
+  margin-top: -15vh;
 }
 
 .heroButton {
@@ -483,8 +485,25 @@ a.secondary {
   background-position: center;
   background-repeat: no-repeat;
   background-color: #0a1520;
-  /* Fallback color */
+    /* Fallback color */
   scroll-margin-top: 0;
+  position: relative;
+    overflow: hidden;
+  }
+  
+  .formSection::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/form-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    object-fit: cover;
+    object-position: center;
 }
 
 .formOverlay {
@@ -494,8 +513,8 @@ a.secondary {
   width: 100%;
   height: 100%;
   background: linear-gradient(to bottom,
-      rgba(10, 21, 32, 0.9) 0%,
-      rgba(10, 21, 32, 0.95) 100%);
+        rgba(10, 21, 32, 0.6) 0%,
+          rgba(10, 21, 32, 0.8) 100%);
 }
 
 .formContent {
