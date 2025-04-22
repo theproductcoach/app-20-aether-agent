@@ -1,17 +1,87 @@
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import styles from "../page.module.css";
+import ItineraryResult from "./ItineraryResult";
 
 const interests = ["History", "Food", "Nature", "Art", "Relaxation"];
 const currencies = ["USD", "EUR", "GBP", "JPY", "AUD"];
 
+interface FormData {
+  destination: string;
+  dates: string;
+  currency: string;
+  budget: number;
+  interests: string[];
+}
+
+interface ItineraryResponse {
+  itinerary: { day: string; plan: string }[];
+  totalCost: string;
+  agentThoughts: string[];
+}
+
 export default function TravelForm() {
-  const handleSubmit = (e: FormEvent) => {
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [showResult, setShowResult] = useState(false);
+  const [itineraryData, setItineraryData] = useState<ItineraryResponse | null>(null);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted");
+
+    const form = e.currentTarget;
+    const formData: FormData = {
+      destination: (form.querySelector("#destination") as HTMLInputElement).value,
+      dates: (form.querySelector("#dates") as HTMLInputElement).value,
+      currency: (form.querySelector("#currency") as HTMLSelectElement).value,
+      budget: Number((form.querySelector("#budget") as HTMLInputElement).value),
+      interests: selectedInterests,
+    };
+
+    try {
+      setItineraryData(null);
+
+      const response = await fetch("/api/plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      setItineraryData(data);
+      setShowResult(true);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
   };
+
+  const handlePlanAnother = () => {
+    setShowResult(false);
+    setSelectedInterests([]);
+  };
+
+  const handleInterestToggle = (interest: string) => {
+    setSelectedInterests((prev) =>
+      prev.includes(interest)
+        ? prev.filter((i) => i !== interest)
+        : [...prev, interest]
+    );
+  };
+
+  if (showResult && itineraryData) {
+    return (
+      <ItineraryResult
+        itinerary={itineraryData.itinerary}
+        totalCost={itineraryData.totalCost}
+        agentThoughts={itineraryData.agentThoughts}
+        onPlanAnother={handlePlanAnother}
+      />
+    );
+  }
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -74,6 +144,8 @@ export default function TravelForm() {
                 id={interest}
                 value={interest}
                 className={styles.checkbox}
+                checked={selectedInterests.includes(interest)}
+                onChange={() => handleInterestToggle(interest)}
               />
               <label htmlFor={interest} className={styles.checkboxLabel}>
                 {interest}

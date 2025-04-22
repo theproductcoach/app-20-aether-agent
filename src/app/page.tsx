@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import dynamic from "next/dynamic";
 import styles from "./page.module.css";
+import HeroSection from "./components/HeroSection";
 
 // Create a client-only form component
 const TravelForm = dynamic(() => import("./components/TravelForm"), {
@@ -21,14 +22,7 @@ export default function Home() {
 
   return (
     <div className={styles.pageWrapper}>
-      <section className={styles.heroSection}>
-        <div className={styles.heroOverlay} />
-        <div className={styles.heroContent}>
-          <button onClick={scrollToForm} className={styles.heroButton}>
-            Start Planning
-          </button>
-        </div>
-      </section>
+      <HeroSection onStartPlanning={scrollToForm} />
 
       <section ref={formRef} className={styles.formSection}>
         <div className={styles.formOverlay} />

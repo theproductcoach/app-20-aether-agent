@@ -1,0 +1,83 @@
+.heroSection {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0a1520;
+    overflow: hidden;
+    scroll-snap-align: start;
+}
+
+.heroImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+}
+
+.heroOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom,
+            rgba(10, 21, 32, 0.5) 0%,
+            rgba(10, 21, 32, 0.7) 100%);
+    z-index: 1;
+}
+
+.heroContent {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: var(--max-width);
+    padding: 0 var(--spacing-unit);
+}
+
+.heroButton {
+    background: rgba(72, 202, 228, 0.15);
+    color: rgb(144, 224, 239);
+    border: 1px solid rgba(144, 224, 239, 0.3);
+    border-radius: 8px;
+    font-size: 1.25rem;
+    font-weight: 500;
+    padding: 0.875rem 2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+    text-transform: none;
+}
+
+.heroButton:hover {
+    background: rgba(72, 202, 228, 0.25);
+    border-color: rgba(144, 224, 239, 0.5);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .heroSection {
+        height: 100vh;
+        /* Remove aspect-ratio for mobile to ensure full height */
+    }
+
+    .heroImage {
+        object-position: center 20%;
+        object-fit: contain;
+        /* Adjust mobile image focus point if needed */
+    }
+
+    .heroButton {
+        font-size: 1.1rem;
+        padding: 0.875rem 1.75rem;
+    }
+}
