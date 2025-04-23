@@ -67,7 +67,7 @@ export default function TravelForm() {
       formData.interests.forEach((i) => queryParams.append("interests", i));
 
       const eventSource = new EventSource(
-        `http://localhost:8000/stream-plan?${queryParams.toString()}`
+        `https://app-20-aether-agent-backend.onrender.com/stream-plan?${queryParams.toString()}`
       );
 
       eventSource.onmessage = (event) => {
