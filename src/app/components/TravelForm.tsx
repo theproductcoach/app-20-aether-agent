@@ -23,6 +23,7 @@ interface Itinerary {
   }[];
 }
 
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 interface ServerMessage {
   type: "thought" | "final" | "narration";
   content?: string;
@@ -32,6 +33,7 @@ interface ServerMessage {
 export default function TravelForm() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [showResult, setShowResult] = useState(false);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [isLoading, setIsLoading] = useState(false);
   const [streamingThoughts, setStreamingThoughts] = useState<string[]>([]);
   const [finalItinerary, setFinalItinerary] = useState<Itinerary | null>(null);
@@ -125,7 +127,10 @@ export default function TravelForm() {
               console.warn("Unhandled message type:", message);
               break;
           }
-        } catch (err) {
+        } catch (
+          /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+          _err
+        ) {
           console.warn("Invalid SSE message:", event.data);
         }
       };
@@ -157,9 +162,9 @@ export default function TravelForm() {
     );
   };
 
-  /* if (isLoading && streamingThoughts.length === 0) {
+  if (isLoading && streamingThoughts.length === 0) {
     return <LoadingState />;
-  } */
+  } 
 
   if (true) {
     if (streamingThoughts.length > 0 || showResult) {
