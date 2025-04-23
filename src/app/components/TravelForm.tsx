@@ -15,18 +15,34 @@ interface FormData {
   interests: string[];
 }
 
+interface Itinerary {
+  title: string;
+  days: {
+    day: number;
+    activities: string[];
+  }[];
+}
+
+interface ServerMessage {
+  type: "thought" | "final";
+  content?: string;
+  payload?: Itinerary;
+}
+
 export default function TravelForm() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [streamingThoughts, setStreamingThoughts] = useState<string[]>([]);
+  const [finalItinerary, setFinalItinerary] = useState<Itinerary | null>(null);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const form = e.currentTarget;
     const formData: FormData = {
-      destination: (form.querySelector("#destination") as HTMLInputElement).value,
+      destination: (form.querySelector("#destination") as HTMLInputElement)
+        .value,
       dates: (form.querySelector("#dates") as HTMLInputElement).value,
       currency: (form.querySelector("#currency") as HTMLSelectElement).value,
       budget: Number((form.querySelector("#budget") as HTMLInputElement).value),
@@ -38,21 +54,66 @@ export default function TravelForm() {
       setStreamingThoughts([]);
       setShowResult(false);
 
+      const queryParams = new URLSearchParams({
+        destination: formData.destination,
+        dates: formData.dates,
+        currency: formData.currency,
+        budget: formData.budget.toString(),
+      });
+
+      formData.interests.forEach((i) => queryParams.append("interests", i));
+
       const eventSource = new EventSource(
-        "https://app-20-aether-agent-backend.onrender.com/stream-plan"
+        `http://localhost:8000/stream-plan?${queryParams.toString()}`
       );
 
       eventSource.onmessage = (event) => {
-        const data = event.data;
-
-        if (data === "[DONE]") {
-          eventSource.close();
-          setIsLoading(false);
-          setShowResult(true);
-          return;
+        console.log("Raw SSE:", event.data);
+        try {
+          const message = JSON.parse(event.data);
+          console.log("Received message:", message); // <— Add this
+          
+          switch (message.type) {
+            case "thought":
+              if (message.content) {
+                let content = message.content;
+            
+                // If content is an object dumped as a string, make it readable
+                if (typeof content === "string" && content.includes("{") && content.includes("input")) {
+                  try {
+                    // Try to parse it if it's a stringified object
+                    const parsed = JSON.parse(content);
+                    if (parsed?.input) content = parsed.input;
+                  } catch {
+                    // If parsing fails, just use the raw string
+                  }
+                }
+            
+                console.log("Streaming thought:", content);
+                setStreamingThoughts((prev) => [...prev, content]);
+                setIsLoading(false);
+              }
+              break;
+      
+            case "final":
+              if (message.payload) {
+                console.log("Received finalItinerary payload:", message.payload);
+                setFinalItinerary(message.payload);
+              }
+              break;
+      
+            case "done":
+              setShowResult(true);
+              eventSource.close();
+              break;
+      
+            default:
+              console.warn("Unhandled message type:", message);
+              break;
+          }
+        } catch (err) {
+          console.warn("Invalid SSE message:", event.data);
         }
-
-        setStreamingThoughts((prev) => [...prev, data]);
       };
 
       eventSource.onerror = (err) => {
@@ -70,6 +131,7 @@ export default function TravelForm() {
     setShowResult(false);
     setSelectedInterests([]);
     setStreamingThoughts([]);
+    setFinalItinerary(null);
   };
 
   const handleInterestToggle = (interest: string) => {
@@ -80,25 +142,83 @@ export default function TravelForm() {
     );
   };
 
-  if (isLoading) {
+  /* if (isLoading && streamingThoughts.length === 0) {
     return <LoadingState />;
-  }
+  } */
 
-  if (showResult) {
+  if (true) {
+
+  if (streamingThoughts.length > 0 || showResult) {
     return (
-      <section style={{ maxWidth: "600px", margin: "2rem auto", padding: "1rem" }}>
-        <h2 style={{ marginBottom: "1rem" }}>🧠 Agent Thoughts</h2>
-        <ul style={{ lineHeight: "1.6", paddingLeft: 0 }}>
-          {streamingThoughts.map((thought, index) => (
-            <li key={index} style={{ marginBottom: "0.5rem", listStyle: "none" }}>
-              <span style={{ marginRight: "0.5rem" }}>💡</span>
-              {thought}
-            </li>
-          ))}
-        </ul>
-        <button onClick={handlePlanAnother} style={{ marginTop: "2rem" }}>
-          Plan Another Trip
-        </button>
+      <section className={styles.form} style={{ maxWidth: "800px" }}>
+        <div style={{ marginBottom: "2rem" }}>
+          <h2 style={{ marginBottom: "1rem", color: "#2563eb" }}>
+            🧠 Agent Thoughts
+          </h2>
+
+          <pre>{JSON.stringify(streamingThoughts, null, 2)}</pre> 
+
+          <ul style={{ lineHeight: "1.6", paddingLeft: 0 }}>
+            {streamingThoughts.map((thought, index) => (
+              <li
+                key={index}
+                style={{
+                  marginBottom: "0.5rem",
+                  listStyle: "none",
+                  background: "#f8fafc",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                }}
+              >
+                <span style={{ marginRight: "0.5rem" }}>💡</span>
+                {thought}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {finalItinerary && showResult && (
+          <div
+            style={{
+              marginTop: "2rem",
+              padding: "1.5rem",
+              background: "#f0f9ff",
+              borderRadius: "0.75rem",
+              border: "1px solid #bae6fd",
+            }}
+          >
+            <h2 style={{ color: "#0369a1", marginBottom: "1.5rem" }}>
+              {finalItinerary.title}
+            </h2>
+            {finalItinerary.days.map((day) => (
+              <div key={day.day} style={{ marginBottom: "1.5rem" }}>
+                <h3 style={{ color: "#0284c7", marginBottom: "0.75rem" }}>
+                  Day {day.day}
+                </h3>
+                <ul style={{ paddingLeft: "1.25rem" }}>
+                  {day.activities.map((activity, idx) => (
+                    <li
+                      key={idx}
+                      style={{ marginBottom: "0.5rem", color: "#334155" }}
+                    >
+                      {activity}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showResult && (
+          <button
+            onClick={handlePlanAnother}
+            className={styles.button}
+            style={{ marginTop: "2rem" }}
+          >
+            Plan Another Trip
+          </button>
+        )}
       </section>
     );
   }
@@ -180,4 +300,5 @@ export default function TravelForm() {
       </button>
     </form>
   );
+  }
 }
