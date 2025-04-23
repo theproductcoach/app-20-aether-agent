@@ -155,9 +155,6 @@ export default function TravelForm() {
           <h2 style={{ marginBottom: "1rem", color: "#2563eb" }}>
             🧠 Agent Thoughts
           </h2>
-
-          <pre>{JSON.stringify(streamingThoughts, null, 2)}</pre> 
-
           <ul style={{ lineHeight: "1.6", paddingLeft: 0 }}>
             {streamingThoughts.map((thought, index) => (
               <li
@@ -168,6 +165,7 @@ export default function TravelForm() {
                   background: "#f8fafc",
                   padding: "0.75rem",
                   borderRadius: "0.5rem",
+                  color: "#0f172a", // dark text for better contrast
                 }}
               >
                 <span style={{ marginRight: "0.5rem" }}>💡</span>
