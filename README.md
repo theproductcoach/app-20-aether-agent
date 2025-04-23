@@ -1,8 +1,19 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Travel Planner
+
+An interactive travel planning application that uses AI to create personalized travel itineraries. Built with Next.js and Server-Sent Events (SSE) for real-time agent interactions.
+
+## Features
+
+- **Interactive Form**: Input your destination, dates, budget, and travel interests
+- **Real-time Agent Thoughts**: Watch the AI agent's thought process in real-time
+- **Live Narration**: Experience a narrative description of your travel plan as it's being created
+- **Detailed Itineraries**: Receive day-by-day travel plans with activities
+- **Currency Support**: Plan in multiple currencies (USD, EUR, GBP, JPY, AUD)
+- **Interest Categories**: Customize your trip based on interests like History, Food, Nature, Art, and Relaxation
 
 ## Getting Started
 
-First, run the development server:
+1. Start the development server:
 
 ```bash
 npm run dev
@@ -10,13 +21,64 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Start the backend server (required for AI functionality):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Navigate to the backend directory and start the server
+# The backend should run on http://localhost:8000
+```
+
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application
+
+## How It Works
+
+1. **Input Your Preferences**:
+   - Enter your destination
+   - Specify travel dates
+   - Set your budget and preferred currency
+   - Select your travel interests
+
+2. **Watch the Planning Process**:
+   - See the AI agent's thoughts in real-time
+   - Read a narrative description of your trip
+   - Get a structured day-by-day itinerary
+
+3. **Review and Plan Again**:
+   - View your complete travel plan
+   - Start over to plan another trip
+
+## Technical Details
+
+- Built with Next.js 14 and React
+- Uses Server-Sent Events (SSE) for real-time streaming
+- TypeScript for type safety
+- Tailwind-inspired styling system
+- Responsive design for all devices
+
+## Backend Requirements
+
+The application expects a backend server running on `http://localhost:8000` that implements the following SSE endpoint:
+
+```
+GET /stream-plan?destination={}&dates={}&currency={}&budget={}&interests=[]
+```
+
+The backend should stream messages in the following formats:
+
+- Thoughts: `{ type: "thought", content: "..." }`
+- Narration: `{ type: "narration", content: "..." }`
+- Final Plan: `{ type: "final", payload: { title: "...", days: [...] } }`
+- Completion: `{ type: "done" }`
+
+## Development
+
+To modify the application, edit the following key files:
+
+- `src/app/components/TravelForm.tsx` - Main form and display logic
+- `src/app/page.module.css` - Styling definitions
+- `src/app/page.tsx` - Page layout and routing
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
